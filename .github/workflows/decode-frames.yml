@@ -1,0 +1,33 @@
+name: Decode frames
+on:
+  push:
+    paths:
+      - "base64/**"
+      - ".github/workflows/decode-frames.yml"
+  workflow_dispatch:
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode base64 images
+        run: |
+          mkdir -p frames
+          for f in base64/*.b64.txt; do
+            name=$(basename "$f" .b64.txt)
+            base64 -d "$f" > "frames/${name}.jpg"
+            file "frames/${name}.jpg"
+          done
+      - name: Commit decoded images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frames/*.jpg
+          if git diff --cached --quiet; then
+            echo "No image changes"
+          else
+            git commit -m "Add decoded JPEG campaign frames"
+            git push
+          fi
