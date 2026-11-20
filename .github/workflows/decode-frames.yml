@@ -20,11 +20,19 @@ jobs:
             base64 -d "$f" > "frames/${name}.jpg"
             file "frames/${name}.jpg"
           done
+          if ls base64/ig/*.b64.txt >/dev/null 2>&1; then
+            mkdir -p frames/ig
+            for f in base64/ig/*.b64.txt; do
+              name=$(basename "$f" .b64.txt)
+              base64 -d "$f" > "frames/ig/${name}.jpg"
+              file "frames/ig/${name}.jpg"
+            done
+          fi
       - name: Commit decoded images
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frames/*.jpg
+          git add frames/*.jpg frames/ig/*.jpg 2>/dev/null || git add frames/*.jpg
           if git diff --cached --quiet; then
             echo "No image changes"
           else
